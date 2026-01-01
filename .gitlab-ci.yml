@@ -1,0 +1,46 @@
+variables:
+  IMAGE: "javid006/front-end:$CI_COMMIT_SHORT_SHA"
+  LATEST_IMAGE: "javid006/front-end:latest"
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  tags:
+    - docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - docker build -t "$IMAGE" .
+    - docker push "$IMAGE"
+    - docker tag "$IMAGE" "$LATEST_IMAGE"
+    - docker push "$LATEST_IMAGE"
+  only:
+    - main
+
+# ------------------------
+# Deploy Stage – Kubernetes
+# ------------------------
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  tags:
+    - k8s
+  before_script:
+    # GitLab Agent ilə cluster connect üçün
+    - export KUBECONFIG="$CI_PROJECT_DIR/.kube/config"
+    # Əgər GitLab Agent istifadə edirsə, onu burda configure edə bilərsən
+  script:
+    - kubectl config use-context "$KUBE_CONTEXT"
+    - kubectl set image deployment/front-end front-end="$IMAGE" --record
+    - kubectl rollout status deployment/front-end
+  only:
+    - main
