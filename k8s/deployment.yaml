@@ -15,7 +15,7 @@ spec:
       imagePullSecrets:
         - name: gitlab-regcred
       containers:
-      - name: front-end
-        image: registry.gitlab.com/javidmm.006/javidmm.006:latest
-        ports:
-          - containerPort: 80
+        - name: front-end
+          image: registry.gitlab.com/javidmm.006/front-end:latest
+          ports:
+            - containerPort: 80
