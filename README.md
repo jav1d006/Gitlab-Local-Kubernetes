@@ -22,7 +22,7 @@ git push -uf origin main
 
 ## Integrate with your tools
 
-* [Set up project integrations](http://192.168.0.125/root/front-end/-/settings/integrations)
+* [Set up project integrations](https://gitlab.com/javidmm.006/front-end/-/settings/integrations)
 
 ## Collaborate with your team
 
