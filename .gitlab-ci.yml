@@ -1,34 +1,35 @@
 variables:
- IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
- KUBE_CONTEXT: "sadigovanar/front-end:front-end"
+  IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  KUBE_CONTEXT: "javid006/front-end:front-end"
 
 stages:
- - build 
- - deploy
+  - build 
+  - deploy
 
 build: 
- stage: build 
- image: docker:24.0.2 
- services: 
-  - docker:24.0.2-dind 
+  stage: build 
+  image: docker:24.0.2 
+  services: 
+    - docker:24.0.2-dind 
 before_script: 
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
 script: # Build və push commit SHA tag
-  - docker build -t "$IMAGE" . 
-  - docker push "$IMAGE" 
+    - docker build -t "$IMAGE" . 
+    - docker push "$IMAGE" 
  # Əlavə olaraq 'latest' tag 
-  - docker tag "$IMAGE" "$CI_REGISTRY_IMAGE:latest" 
-  - docker push "$CI_REGISTRY_IMAGE:latest" 
+    - docker tag "$IMAGE" "$CI_REGISTRY_IMAGE:latest" 
+    - docker push "$CI_REGISTRY_IMAGE:latest" 
  only: 
-  - main
+   - main
 
 deploy: 
- stage: deploy 
- image: bitnami/kubectl:latest 
- script: 
+  stage: deploy 
+  image: 
+    name: bitnami/kubectl:latest 
+  script: 
   # Kubeconfig daxil edin və deployment edin 
-  - kubectl config set-context "$KUBE_CONTEXT" 
-  - kubectl apply -f k8s/deployment.yaml 
-  - kubectl apply -f k8s/service.yaml 
+    - kubectl config set-context "$KUBE_CONTEXT" 
+    - kubectl apply -f k8s/deployment.yaml 
+    - kubectl apply -f k8s/service.yaml 
   only: 
-   - main
+    - main
