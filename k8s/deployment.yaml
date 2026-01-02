@@ -12,8 +12,10 @@ spec:
       labels:
         app: front-end
     spec:
+      imagePullSecrets:
+        - name: gitlab-regcred
       containers:
       - name: front-end
-        image: javid/frontend:latest
+        image: registry.gitlab.com/javidmm.006/javidmm.006:latest
         ports:
-        - containerPort: 80
+          - containerPort: 80
