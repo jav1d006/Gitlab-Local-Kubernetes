@@ -29,7 +29,7 @@ deploy:
     - kubectl config get-contexts
     - kubectl config use-context "$KUBE_CONTEXT"
 
-    # Deployment YAML-da IMAGE dəyişənini dəyişdir
+    # Deployment YAML-da IMAGE dəyişənini dəyişdirr
     - sed "s|${IMAGE}|${CI_REGISTRY_IMAGE}:latest|g" k8s/deployment.yaml > k8s/deployment-applied.yaml
     - kubectl apply -f k8s/deployment-applied.yaml
 
