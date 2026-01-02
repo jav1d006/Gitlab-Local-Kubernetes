@@ -1,46 +1,33 @@
 variables:
-  IMAGE: "javid006/front-end:$CI_COMMIT_SHORT_SHA"
-  LATEST_IMAGE: "javid006/front-end:latest"
+ IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+ KUBE_CONTEXT: "sadigovanar/front-end:front-end"
 
 stages:
-  - build
-  - deploy
+ - build 
+ - deploy
 
-build:
-  stage: build
-  image: docker:24.0.2
-  services:
-    - docker:24.0.2-dind
-  tags:
-    - docker
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-  before_script:
-    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  script:
-    - docker build -t "$IMAGE" .
-    - docker push "$IMAGE"
-    - docker tag "$IMAGE" "$LATEST_IMAGE"
-    - docker push "$LATEST_IMAGE"
-  only:
-    - main
+build: 
+ stage: build 
+ image: docker:24.0.2 
+ services: 
+  - docker:24.0.2-dind 
+before_script: - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+script: # Build və push commit SHA tag
+ - docker build -t "$IMAGE" . 
+ - docker push "$IMAGE" 
+ # Əlavə olaraq 'latest' tag 
+ - docker tag "$IMAGE" "$CI_REGISTRY_IMAGE:latest" 
+ - docker push "$CI_REGISTRY_IMAGE:latest" 
+ only: 
+  - main
 
-# ------------------------
-# Deploy Stage – Kubernetes
-# ------------------------
-deploy:
-  stage: deploy
-  image: bitnami/kubectl:latest
-  tags:
-    - k8s
-  before_script:
-    # GitLab Agent ilə cluster connect üçün
-    - export KUBECONFIG="$CI_PROJECT_DIR/.kube/config"
-    # Əgər GitLab Agent istifadə edirsə, onu burda configure edə bilərsən
-  script:
-    - kubectl config use-context "$KUBE_CONTEXT"
-    - kubectl set image deployment/front-end front-end="$IMAGE" --record
-    - kubectl rollout status deployment/front-end
-  only:
-    - main
+deploy: 
+ stage: deploy 
+ image: bitnami/kubectl:latest 
+ script: 
+  # Kubeconfig daxil edin və deployment edin 
+  - kubectl config set-context "$KUBE_CONTEXT" 
+  - kubectl apply -f k8s/deployment.yaml 
+  - kubectl apply -f k8s/service.yaml 
+  only: 
+   - main
