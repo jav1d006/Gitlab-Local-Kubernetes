@@ -1,0 +1,12 @@
+ci_access:
+  projects:
+    # Allow CI jobs to deploy manifests in this project
+    - id: javidmm.006/front-end
+
+
+user_access:
+  access_as:
+    agent: {}
+  projects:
+    # Permit users to view the Kubernetes dashboard in this project
+    - id: javidmm.006/front-end
