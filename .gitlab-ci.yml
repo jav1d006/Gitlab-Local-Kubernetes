@@ -1,0 +1,39 @@
+variables:
+  IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  KUBE_CONTEXT: "javid006/front-end:front-end"
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    # Build və push commit SHA tag
+    - docker build -t "$IMAGE" .
+    - docker push "$IMAGE"
+
+    # 'latest' tag yarad və push et
+    - docker tag "$IMAGE" "$CI_REGISTRY_IMAGE:latest"
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  script:
+    # Kube context seçimi
+    - kubectl config get-contexts
+    - kubectl config use-context "$KUBE_CONTEXT"
+
+    # Deployment YAML-da IMAGE dəyişənini dəyişdir
+    - sed "s|${IMAGE}|${CI_REGISTRY_IMAGE}:latest|g" k8s/deployment.yaml > k8s/deployment-applied.yaml
+    - kubectl apply -f k8s/deployment-applied.yaml
+
+    # Service tətbiq et
+    - kubectl apply -f k8s/service.yaml
+  only:
+    - main
