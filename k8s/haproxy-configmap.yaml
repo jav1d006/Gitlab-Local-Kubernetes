@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy-config
+data:
+  haproxy.cfg: |
+    global
+        log stdout format raw local0
+
+    defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        option forwardfor header X-Forwarded-For
+
+        log-format {"Client_IP":"%[hdr(x-forwarded-for),field(1,',')]","haproxy_frontend":"%ft","haproxy_backend":"%b","haproxy_statusCode":"%ST","haproxy_httpRequest":"%r"}
+
+        timeout connect 5s
+        timeout client  50s
+        timeout server  50s
+
+    frontend http_front
+        bind *:8080
+        default_backend front_end_backend
+
+    backend front_end_backend
+        balance roundrobin
+        option httpchk GET /
+        server front-end front-end-service:80 check
