@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-end-service
+spec:
+  type: ClusterIP   # NodePort yox, yalnız HAProxy istifadə edəcək
+  selector:
+    app: front-end
+  ports:
+    - port: 80
+      targetPort: 80
