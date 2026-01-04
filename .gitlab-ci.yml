@@ -42,5 +42,11 @@ deploy:
     # Service tətbiq edilir
     - kubectl apply -f k8s/service.yaml
 
+        # ===== HAPROXY =====
+    - kubectl apply -f k8s/haproxy-configmap.yaml
+    - kubectl apply -f k8s/haproxy-deployment.yaml
+    - kubectl apply -f k8s/haproxy-service.yaml
+
+
   only:
     - main
